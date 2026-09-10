@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Treino de Calistenia em Casa</title>
+  <link rel="icon" href="assets/exercicios/flexao.svg?v=flexao-20260901" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Calistenia">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css?v=20260901" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[SW] Registrado:', reg.scope))
+          .catch(err => console.warn('[SW] Erro ao registrar:', err));
+      });
+    }
+  </script>
+
+</head>
+<body>
+  <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <linearGradient id="timerRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#10b981" />
+        <stop offset="100%" stop-color="#34d399" />
+      </linearGradient>
+      <linearGradient id="timerRingWarningGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f59e0b" />
+        <stop offset="100%" stop-color="#fbbf24" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="app-container">
+    <header>
+      <div class="guided-hero-banner">
+        <button id="startGuidedWorkoutBtn" class="btn btn-guided-start" type="button" aria-label="Iniciar treino guiado">
+          <span class="guided-btn-icon">⚡</span>
+          <span>Iniciar Treino Guiado</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="daily-progress-card">
+      <div class="daily-progress-header">
+        <div class="daily-progress-info">
+          <span class="daily-progress-icon">📊</span>
+          <div>
+            <h3 class="daily-progress-title">Progresso Diário</h3>
+            <p id="dailyProgressSubtitle" class="daily-progress-subtitle">0% do treino de hoje concluído (0 de 10 exercícios)</p>
+          </div>
+        </div>
+        <button id="resetDailyProgressBtn" class="btn btn-outline btn-reset-daily" type="button" aria-label="Resetar progresso diário">
+          <span>🔄</span>
+          <span>Resetar Progresso Diário</span>
+        </button>
+      </div>
+      <div class="daily-progress-bar-bg">
+        <div id="dailyProgressBarFill" class="daily-progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="timer-card">
+      <h3>Descanso Geral entre Séries</h3>
+      <div id="timerDisplay" class="timer-display">00:60</div>
+      <div class="timer-controls">
+        <button class="btn btn-outline" type="button" data-timer="30">30s</button>
+        <button class="btn btn-outline" type="button" data-timer="60">60s</button>
+        <button class="btn btn-outline" type="button" data-timer="90">90s</button>
+        <button id="timerStartBtn" class="btn" type="button">Iniciar Descanso</button>
+        <button id="timerResetBtn" class="btn btn-outline" type="button">Resetar</button>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" type="button" data-category="todos">Todos</button>
+      <button class="tab-btn" type="button" data-category="superiores">Membros Superiores</button>
+      <button class="tab-btn" type="button" data-category="inferiores">Membros Inferiores</button>
+      <button class="tab-btn" type="button" data-category="core">Core / Abdômen</button>
+    </div>
+
+    <div id="exerciseContainer" class="exercise-grid"></div>
+  </div>
+
+  <div id="exerciseModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button id="closeModalBtn" class="modal-close-btn" type="button" aria-label="Fechar modal">&times;</button>
+
+      <div id="modalGuidedBar" class="modal-guided-bar">
+        <div class="modal-guided-badge">
+          <span class="pulse-indicator"></span>
+          <span id="modalGuidedStepText">Modo Guiado • Exercício 1 de 10</span>
+        </div>
+        <div class="modal-guided-actions">
+          <button id="skipGuidedExerciseBtn" class="btn btn-outline btn-sm" type="button">Próximo ⏭</button>
+          <button id="exitGuidedWorkoutBtn" class="btn btn-outline btn-sm" type="button">Sair do Modo Guiado ✕</button>
+        </div>
+      </div>
+
+      <div id="modalSvgContainer" class="modal-hero" style="position: relative;"></div>
+
+      <div class="modal-body">
+        <div id="guidedTransitionBanner" class="guided-transition-banner">🎉 Descanso concluído! Carregando o próximo exercício...</div>
+
+        <div class="modal-header-info">
+          <h2 id="modalTitle" class="modal-title">Nome do Exercício</h2>
+          <div id="modalMeta" class="modal-meta-badge">3 séries x 10 repetições</div>
+          <p id="modalDesc" class="modal-description" aria-live="polite"></p>
+        </div>
+
+        <div class="modal-tabs-nav">
+          <button id="tabBtnExec" class="modal-tab-btn active" type="button">⚡ Execução</button>
+          <button id="tabBtnBio" class="modal-tab-btn" type="button">🔬 Biomecânica</button>
+        </div>
+
+        <div id="tabPanelExec">
+          <div class="modal-instruction-box">
+            <div class="modal-section-title">Instruções em 3 Passos</div>
+            <div id="modalStepsList" class="steps-list"></div>
+          </div>
+
+          <div class="modal-sets-section">
+            <div class="modal-sets-header">
+              <div class="modal-section-title">Controle de Séries</div>
+              <div id="modalSetsStatus" class="modal-sets-status">Série 1 de 3</div>
+            </div>
+
+            <div class="sets-progress-bar-bg">
+              <div id="modalSetsProgressFill" class="sets-progress-bar-fill"></div>
+            </div>
+
+            <div id="modalSetsGrid" class="sets-indicators-grid"></div>
+
+            <button id="modalCompleteSetBtn" class="btn btn-complete-set" type="button">
+              <span id="modalCompleteSetBtnIcon">✓</span>
+              <span id="modalCompleteSetBtnText">Concluir Série 1</span>
+            </button>
+          </div>
+
+          <div class="modal-timer-container">
+            <div class="modal-timer-ring-wrapper">
+              <svg class="timer-ring-svg" viewBox="0 0 160 160">
+                <circle class="timer-ring-track" cx="80" cy="80" r="68"></circle>
+                <circle id="modalProgressRing" class="timer-ring-fill" cx="80" cy="80" r="68"></circle>
+              </svg>
+              <div class="modal-timer-center-content">
+                <div id="modalTimerDisplay" class="modal-timer-display">00:60</div>
+                <div id="modalTimerSubtext" class="modal-timer-subtext">Descanso</div>
+              </div>
+            </div>
+
+            <div class="modal-preset-group">
+              <button class="btn btn-outline" type="button" data-preset="30">30s</button>
+              <button class="btn btn-outline active" type="button" data-preset="60">60s</button>
+              <button class="btn btn-outline" type="button" data-preset="90">90s</button>
+            </div>
+
+            <div class="modal-timer-controls">
+              <button id="modalTimerToggleBtn" class="btn" type="button">Iniciar Descanso</button>
+              <button class="btn btn-outline" type="button" id="resetModalTimerBtn">Resetar</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="tabPanelBio" style="display:none;">
+          <div id="biomechPanel" class="biomech-panel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Inline error overlay to capture load/runtime errors before modules execute
+    (function() {
+      function createOverlay() {
+        const el = document.createElement('div');
+        el.id = 'bootstrap-error-overlay';
+        el.style.position = 'fixed';
+        el.style.left = '12px';
+        el.style.right = '12px';
+        el.style.bottom = '12px';
+        el.style.zIndex = '99999';
+        el.style.maxHeight = '40vh';
+        el.style.overflow = 'auto';
+        el.style.background = 'rgba(15,23,42,0.95)';
+        el.style.color = '#ffdede';
+        el.style.border = '1px solid rgba(255,0,0,0.18)';
+        el.style.padding = '12px';
+        el.style.fontFamily = 'monospace';
+        el.style.fontSize = '12px';
+        el.style.borderRadius = '8px';
+        el.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+        el.style.display = 'none';
+        el.addEventListener('click', () => { el.style.display = 'none'; });
+        document.body.appendChild(el);
+        return el;
+      }
+
+      const overlay = createOverlay();
+
+      function show(msg) {
+        overlay.style.display = 'block';
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.style.marginBottom = '8px';
+        entry.innerText = `[${time}] ${msg}`;
+        overlay.appendChild(entry);
+        console.error(msg);
+      }
+
+      window.addEventListener('error', function(ev) {
+        try {
+          const msg = ev && ev.error && ev.error.stack ? ev.error.stack : (ev.message || String(ev));
+          show(msg);
+        } catch (e) {
+          console.error('Overlay handler failed', e);
+        }
+      });
+
+      window.addEventListener('unhandledrejection', function(ev) {
+        try {
+          const reason = ev && ev.reason ? (ev.reason.stack || ev.reason) : 'Unhandled rejection';
+          show('UnhandledRejection: ' + reason);
+        } catch (e) {
+          console.error('Overlay handler failed', e);
+        }
+      });
+    })();
+  </script>
+
+  <script type="module" src="js/main.js?v=20260901"></script>
+</body>
+</html>

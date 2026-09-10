@@ -1,0 +1,303 @@
+name: 📱 Build Android APK (Bubblewrap/TWA)
+
+on:
+  # Acionado manualmente pelo usuário no GitHub
+  workflow_dispatch:
+    inputs:
+      pages_url:
+        description: |
+          URL completa do seu GitHub Pages (sem barra final).
+          Exemplo: https://meuusuario.github.io/meu-repo
+        required: false
+        default: ''
+        type: string
+
+  # Também acionado automaticamente após o deploy das Pages
+  workflow_run:
+    workflows: ['🚀 Deploy → GitHub Pages']
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  build-apk:
+    name: 🤖 Build APK via Bubblewrap TWA
+    runs-on: ubuntu-latest
+    # Só roda se o trigger manual OU o deploy de Pages foi bem-sucedido
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Java 17 (requerido pelo Android SDK / Gradle) ─────────
+      - name: ☕ Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # ── 3. Android SDK ───────────────────────────────────────────
+      - name: 📱 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── 4. Node.js ───────────────────────────────────────────────
+      - name: 🟩 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── 5. Ícones ────────────────────────────────────────────────
+      - name: 🎨 Generate app icons
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y imagemagick 2>/dev/null
+          node generate-icons.js
+          echo "Ícones gerados:"
+          ls -la icons/
+
+      # ── 6. Determinar URL do GitHub Pages ────────────────────────
+      - name: 🌐 Determine Pages URL
+        id: url
+        run: |
+          # Prioridade: input manual > automático pelo repositório
+          MANUAL="${{ github.event.inputs.pages_url }}"
+          if [ -n "$MANUAL" ]; then
+            PAGES_URL="$MANUAL"
+          else
+            OWNER="${{ github.repository_owner }}"
+            REPO="${{ github.event.repository.name }}"
+            PAGES_URL="https://${OWNER}.github.io/${REPO}"
+          fi
+
+          # Remove trailing slash
+          PAGES_URL="${PAGES_URL%/}"
+
+          echo "url=$PAGES_URL" >> $GITHUB_OUTPUT
+          echo "host=$(echo $PAGES_URL | sed 's|https://||' | cut -d'/' -f1)" >> $GITHUB_OUTPUT
+          echo ""
+          echo "📡 Pages URL: $PAGES_URL"
+
+      # ── 7. Aguardar o app estar acessível (max 3min) ─────────────
+      - name: ⏳ Wait for Pages to be accessible
+        run: |
+          PAGES_URL="${{ steps.url.outputs.url }}"
+          MANIFEST_URL="${PAGES_URL}/manifest.json"
+          echo "🔍 Verificando: $MANIFEST_URL"
+
+          for i in $(seq 1 18); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$MANIFEST_URL" 2>/dev/null || echo "000")
+            echo "  Tentativa $i/18 → HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ App acessível!"
+              break
+            fi
+            if [ $i -eq 18 ]; then
+              echo "⚠️  App ainda não acessível após 3 minutos."
+              echo "   Continuando mesmo assim — o build pode falhar se a URL não estiver no ar."
+            fi
+            sleep 10
+          done
+
+      # ── 8. Instalar Bubblewrap ────────────────────────────────────
+      - name: 📦 Install Bubblewrap CLI
+        run: |
+          npm install -g @bubblewrap/cli@latest
+          bubblewrap --version
+
+      # ── 9. Gerar Keystore de debug ───────────────────────────────
+      - name: 🔑 Generate debug keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore debug.keystore \
+            -alias androiddebugkey \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Calistenia Debug, OU=Dev, O=Calistenia, L=BR, S=BR, C=BR" \
+            2>/dev/null
+          echo "✅ Keystore de debug gerado"
+
+      # ── 10. Inicializar projeto Bubblewrap ────────────────────────
+      - name: 🔧 Bubblewrap Init
+        run: |
+          PAGES_URL="${{ steps.url.outputs.url }}"
+          MANIFEST_URL="${PAGES_URL}/manifest.json"
+
+          echo "🔧 Inicializando Bubblewrap com manifest: $MANIFEST_URL"
+
+          # Configura os paths do JDK e Android SDK para o Bubblewrap
+          JAVA_HOME_PATH="$JAVA_HOME"
+          ANDROID_SDK_PATH="$ANDROID_SDK_ROOT"
+
+          # Cria arquivo de configuração do Bubblewrap
+          mkdir -p ~/.bubblewrap
+          cat > ~/.bubblewrap/config.json << CONFIG
+          {
+            "jdkPath": "$JAVA_HOME_PATH",
+            "androidSdkPath": "$ANDROID_SDK_PATH"
+          }
+          CONFIG
+
+          # Roda init de forma não-interativa
+          # As respostas do prompt são passadas via stdin:
+          # - packageId: com.treino.calistenia
+          # - signing key path: debug.keystore
+          # - key alias: androiddebugkey  
+          # - store password: android
+          # - key password: android
+          printf "com.treino.calistenia\ndebug.keystore\nandroiddebugkey\nandroid\nandroid\n" | \
+            bubblewrap init \
+              --manifest "$MANIFEST_URL" \
+              --directory . \
+            2>&1 | tee bubblewrap-init.log || true
+
+          echo "Init concluído. Verificando arquivos gerados:"
+          ls -la android/ 2>/dev/null || echo "Pasta android/ não criada pelo init"
+          ls -la twa-manifest.json 2>/dev/null || echo "twa-manifest.json não criado"
+
+      # ── 11. Fallback: criar twa-manifest.json manualmente ────────
+      - name: 📋 Create twa-manifest.json (fallback)
+        if: always()
+        run: |
+          if [ -f twa-manifest.json ]; then
+            echo "✅ twa-manifest.json já existe (criado pelo init)"
+            cat twa-manifest.json
+          else
+            echo "⚠️  Criando twa-manifest.json manualmente..."
+            PAGES_URL="${{ steps.url.outputs.url }}"
+            HOST="${{ steps.url.outputs.host }}"
+            START_PATH=$(echo $PAGES_URL | sed "s|https://$HOST||")
+            [ -z "$START_PATH" ] && START_PATH="/"
+            [[ "$START_PATH" != */ ]] && START_PATH="${START_PATH}/"
+
+            cat > twa-manifest.json << TWAMF
+          {
+            "packageId": "com.treino.calistenia",
+            "host": "$HOST",
+            "startUrl": "$START_PATH",
+            "name": "Treino de Calistenia",
+            "launcherName": "Calistenia",
+            "display": "standalone",
+            "orientation": "portrait",
+            "themeColor": "#10b981",
+            "navigationColor": "#0f172a",
+            "navigationColorDark": "#0f172a",
+            "navigationDividerColor": "#1e293b",
+            "navigationDividerColorDark": "#1e293b",
+            "backgroundColor": "#0f172a",
+            "enableNotifications": false,
+            "startUrl": "$START_PATH",
+            "iconUrl": "${PAGES_URL}/icons/icon-512.png",
+            "maskableIconUrl": "${PAGES_URL}/icons/icon-512.png",
+            "monochromeIconUrl": "${PAGES_URL}/icons/icon-512.png",
+            "appVersion": "1.0",
+            "appVersionCode": 1,
+            "signingKey": {
+              "path": "./debug.keystore",
+              "alias": "androiddebugkey"
+            },
+            "enableSiteSettingsShortcut": true,
+            "generatorApp": "bubblewrap-cli",
+            "webManifestUrl": "${PAGES_URL}/manifest.json",
+            "fallbackType": "customtabs",
+            "features": {},
+            "alphaDependencies": { "enabled": false },
+            "isChromeOSOnly": false,
+            "isMetaQuest": false,
+            "fullScopeUrl": "${PAGES_URL}/",
+            "minSdkVersion": 21,
+            "pwafeatures": []
+          }
+          TWAMF
+            echo "twa-manifest.json criado:"
+            cat twa-manifest.json
+          fi
+
+      # ── 12. Build APK via Bubblewrap ─────────────────────────────
+      - name: 🏗️ Build APK
+        run: |
+          echo "🏗️  Iniciando build do APK..."
+
+          # Bubblewrap build — fornece senhas do keystore via stdin
+          printf "android\nandroid\n" | \
+            bubblewrap build \
+              --skipPwaValidation \
+            2>&1 | tee bubblewrap-build.log || BUILD_FAILED=true
+
+          if [ -n "$BUILD_FAILED" ]; then
+            echo ""
+            echo "⚠️  Bubblewrap build falhou. Tentando Gradle diretamente..."
+
+            # Fallback: build debug via Gradle (não requer keystore)
+            if [ -d "android" ]; then
+              cd android
+              chmod +x gradlew
+              ./gradlew assembleDebug \
+                --no-daemon \
+                --stacktrace \
+                2>&1 | tee ../gradle-build.log
+              cd ..
+            else
+              echo "❌ Pasta android/ não encontrada. Build não pôde ser concluído."
+              echo "   Verifique os logs acima para diagnóstico."
+              exit 1
+            fi
+          fi
+
+          # Lista todos os APKs gerados
+          echo ""
+          echo "📱 APKs encontrados:"
+          find . -name "*.apk" -type f 2>/dev/null | while read f; do
+            echo "  → $f ($(du -sh "$f" | cut -f1))"
+          done
+
+      # ── 13. Renomear APK para nome amigável ──────────────────────
+      - name: 📝 Rename APK
+        if: always()
+        run: |
+          mkdir -p output
+          find . -name "*.apk" -type f ! -path "./output/*" | while read f; do
+            BASE=$(basename "$f" .apk)
+            cp "$f" "output/calistenia-${BASE}.apk"
+            echo "Copiado: $f → output/calistenia-${BASE}.apk"
+          done
+          ls -la output/ 2>/dev/null || echo "Nenhum APK copiado"
+
+      # ── 14. Upload do APK como artefato ──────────────────────────
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calistenia-apk-${{ github.run_number }}
+          path: |
+            output/*.apk
+            *.apk
+            android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      # ── 15. Resumo do build ───────────────────────────────────────
+      - name: 📊 Build Summary
+        if: always()
+        run: |
+          echo "## 📱 Resultado do Build do APK" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL do App:** ${{ steps.url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          APK_COUNT=$(find . -name "*.apk" -type f 2>/dev/null | wc -l)
+          if [ "$APK_COUNT" -gt "0" ]; then
+            echo "✅ **$APK_COUNT APK(s) gerado(s) com sucesso!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Baixe o APK na aba **Artifacts** desta execução do workflow." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Nenhum APK foi gerado.** Verifique os logs de build." >> $GITHUB_STEP_SUMMARY
+          fi

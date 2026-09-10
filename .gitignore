@@ -1,0 +1,19 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Android / Bubblewrap
+*.keystore
+!debug.keystore
+android/
+output/
+*.apk
+
+# Logs
+*.log
+bubblewrap-*.log
+gradle-*.log
+
+# OS
+.DS_Store
+Thumbs.db
