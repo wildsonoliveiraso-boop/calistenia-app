@@ -15,6 +15,7 @@
   "iconUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/icons/icon-512.png",
   "maskableIconUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/icons/icon-512.png",
   "monochromeIconUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
   "appVersion": "1.0.0",
   "appVersionCode": 1,
   "signingKey": {
@@ -36,6 +37,5 @@
   "orientation": "portrait",
   "fingerprints": [],
   "additionalTrustedOrigins": [],
-  "retainedBundles": [],
-  "appVersionName": "1.0.0"
+  "retainedBundles": []
 }

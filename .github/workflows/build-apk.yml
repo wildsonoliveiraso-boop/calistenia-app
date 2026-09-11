@@ -151,6 +151,7 @@ jobs:
             "iconUrl": "${PAGES_URL}/icons/icon-512.png",
             "maskableIconUrl": "${PAGES_URL}/icons/icon-512.png",
             "monochromeIconUrl": "${PAGES_URL}/icons/icon-512.png",
+            "splashScreenFadeOutDuration": 300,
             "appVersion": "1.0.0",
             "appVersionCode": 1,
             "signingKey": {
