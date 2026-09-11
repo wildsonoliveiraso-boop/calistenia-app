@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.treino.calistenia",
+      "sha256_cert_fingerprints": [
+        "9C:4C:50:9E:25:D2:19:DB:41:52:04:58:D1:93:32:F9:90:42:96:10:69:E7:BF:EB:91:0A:78:65:8F:9B:79:ED"
+      ]
+    }
+  }
+]
