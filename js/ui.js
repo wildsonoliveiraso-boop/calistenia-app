@@ -1,4 +1,13 @@
-import { exercises, exerciseProgress, getProgressSummary, completeCurrentSet, resetDailyProgress } from './workout.js';
+import {
+  exercises,
+  exerciseProgress,
+  getProgressSummary,
+  completeCurrentSet,
+  resetDailyProgress,
+  swapWorkoutExercise,
+  resetWorkoutToDefault,
+  getAvailableAlternatives
+} from './workout.js';
 import { playBeep, playFinalBeep, playWarningBeep, playCelebrationSound } from './audio.js';
 
 const state = {
@@ -32,8 +41,15 @@ export const exerciseGIFs = {
   elevacaoPelvica: 'assets/exercicios/elevacaoPelvica.gif',
   prancha: 'assets/exercicios/prancha.gif',
   remador: 'assets/exercicios/remador.gif',
-  elevacaoPernas: 'assets/exercicios/elevacaoPernas.gif'
+  elevacaoPernas: 'assets/exercicios/elevacaoPernas.gif',
+  polichinelo: 'assets/exercicios/polichinelo.gif',
+  panturrilha: 'assets/exercicios/panturrilha.gif',
+  flexaoJoelho: 'assets/exercicios/flexaoJoelho.gif',
+  flexaoDiamante: 'assets/exercicios/flexaoDiamante.gif',
+  dips: 'assets/exercicios/dips.gif',
+  agachamentoSumo: 'assets/exercicios/agachamentoSumo.gif'
 };
+
 
 export function getExerciseMediaHTML(svgKey, title) {
   const src = exerciseGIFs[svgKey] || `assets/exercicios/${svgKey}.gif`;
@@ -76,6 +92,9 @@ export function renderExercises(data = exercises) {
 
     card.innerHTML = `
       <div class="img-container">
+        <button type="button" class="btn-swap-exercise" data-swap-id="${item.id}" title="Trocar este exercício por outro">
+          <span>🔄</span> Trocar
+        </button>
         <span class="card-badge">${item.categoryLabel}</span>
         <span class="card-progress-pill" style="${isAllDone ? 'color:#10b981; border-color:#10b981;' : ''}">
           ${isAllDone ? '✓ Concluído' : `${completedCount}/${item.totalSets} séries`}
@@ -97,6 +116,14 @@ export function renderExercises(data = exercises) {
         </div>
       </div>
     `;
+
+    const swapBtn = card.querySelector('.btn-swap-exercise');
+    if (swapBtn) {
+      swapBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        openSwapModal(item);
+      });
+    }
 
     container.appendChild(card);
 
@@ -610,4 +637,94 @@ export function attachEventHandlers() {
   if (bioTabBtn) {
     bioTabBtn.addEventListener('click', () => switchModalTab('bio'));
   }
+
+  // Modal de Substituição de Exercícios
+  const swapModal = document.getElementById('exerciseSwapModal');
+  if (swapModal) {
+    swapModal.addEventListener('click', (ev) => {
+      if (ev.target.id === 'exerciseSwapModal') closeSwapModal();
+    });
+  }
+
+  const closeSwapBtn = document.getElementById('closeSwapModalBtn');
+  if (closeSwapBtn) closeSwapBtn.addEventListener('click', closeSwapModal);
+
+  const cancelSwapBtn = document.getElementById('cancelSwapModalBtn');
+  if (cancelSwapBtn) cancelSwapBtn.addEventListener('click', closeSwapModal);
+
+  const resetWorkoutBtn = document.getElementById('btnResetWorkout');
+  if (resetWorkoutBtn) {
+    resetWorkoutBtn.addEventListener('click', () => {
+      if (confirm('Deseja restaurar a rotina de treino original com todos os exercícios padrão?')) {
+        resetWorkoutToDefault();
+        renderExercises();
+        renderProgressBar();
+        playCelebrationSound();
+      }
+    });
+  }
 }
+
+export function openSwapModal(exercise) {
+  const modal = document.getElementById('exerciseSwapModal');
+  if (!modal) return;
+
+  const subtitle = document.getElementById('swapModalSubtitle');
+  if (subtitle) {
+    subtitle.innerHTML = `Substituindo <strong>${exercise.title}</strong> (${exercise.categoryLabel})`;
+  }
+
+  const grid = document.getElementById('swapOptionsGrid');
+  if (grid) {
+    grid.innerHTML = '';
+    const alternatives = getAvailableAlternatives(exercise);
+
+    if (alternatives.length === 0) {
+      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 30px 10px;">Todos os exercícios disponíveis do catálogo já estão no seu treino!</div>`;
+    } else {
+      alternatives.forEach((alt) => {
+        const optionCard = document.createElement('div');
+        optionCard.className = 'swap-option-card';
+        const gifSrc = exerciseGIFs[alt.svgKey] || `assets/exercicios/${alt.svgKey}.gif`;
+        const levelBadgeClass = alt.level === 'beginner' ? 'card-tag-beginner' : alt.level === 'advanced' ? 'card-tag-advanced' : 'card-tag-intermediate';
+
+        optionCard.innerHTML = `
+          <div class="swap-card-thumb-wrap">
+            <span class="swap-card-badge ${levelBadgeClass}">${alt.levelLabel}</span>
+            <img src="${gifSrc}" alt="${alt.title}" loading="lazy" />
+          </div>
+          <div class="swap-card-info">
+            <div class="swap-card-title">${alt.title}</div>
+            <div class="swap-card-meta">${alt.sets} • ${alt.equipment}</div>
+            <div class="swap-card-desc">${alt.desc}</div>
+            <button type="button" class="btn-select-swap">
+              <span>✓</span> Substituir por Este
+            </button>
+          </div>
+        `;
+
+        optionCard.querySelector('.btn-select-swap').addEventListener('click', () => {
+          swapWorkoutExercise(exercise.id, alt.id);
+          closeSwapModal();
+          renderExercises();
+          renderProgressBar();
+          playBeep();
+        });
+
+        grid.appendChild(optionCard);
+      });
+    }
+  }
+
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+export function closeSwapModal() {
+  const modal = document.getElementById('exerciseSwapModal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+  document.body.style.overflow = '';
+}
+

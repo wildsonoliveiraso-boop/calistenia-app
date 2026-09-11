@@ -328,6 +328,42 @@ header p {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
 }
 
+.btn-swap-exercise {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-swap-exercise:hover,
+.btn-swap-exercise:focus-visible {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.7);
+  color: #34d399;
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.28);
+}
+
+.btn-swap-exercise:active {
+  transform: translateY(0) scale(0.97);
+}
+
+
 .svg-icon {
   width: 150px;
   height: 150px;
@@ -949,6 +985,237 @@ header p {
   font-weight: 800;
 }
 
+/* ==========================================================================
+   Modal Seletor de Substitutos (#exerciseSwapModal)
+   ========================================================================== */
+.swap-modal-content {
+  width: min(780px, 95vw);
+  max-height: 88vh;
+  background: #0b1322;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(16, 185, 129, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: swapModalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes swapModalIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.swap-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  position: relative;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+}
+
+.swap-modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.swap-modal-subtitle {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.swap-modal-subtitle strong {
+  color: var(--accent);
+}
+
+.swap-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.swap-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.swap-option-card {
+  background: #0e1828;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.22s ease;
+  position: relative;
+}
+
+.swap-option-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.swap-option-card.current-selected {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+
+.swap-card-thumb-wrap {
+  position: relative;
+  width: 100%;
+  height: 125px;
+  background: #060c14;
+  overflow: hidden;
+}
+
+.swap-card-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.swap-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.swap-card-info {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.swap-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.swap-card-meta {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.swap-card-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  flex: 1;
+}
+
+.btn-select-swap {
+  width: 100%;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-select-swap:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+}
+
+.btn-select-swap:active {
+  transform: translateY(0);
+}
+
+.btn-select-swap.active-current {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  cursor: default;
+  box-shadow: none;
+}
+
+.swap-modal-footer {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(10, 18, 30, 0.5);
+}
+
+/* Barra de Ações Rápidas do Treino */
+.workout-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 12px;
+}
+
+.workout-actions-info {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.workout-actions-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-reset-workout {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-reset-workout:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #f87171;
+}
+
 @media (max-width: 640px) {
   body {
     padding: 12px;
@@ -961,4 +1228,54 @@ header p {
   .timer-display {
     font-size: 2.5rem;
   }
+
+  .swap-modal-content {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+    margin-top: auto;
+  }
+
+  .swap-modal-header {
+    padding: 16px 18px 12px;
+  }
+
+  .swap-modal-body {
+    padding: 12px 14px;
+  }
+
+  .swap-options-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .swap-option-card {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .swap-card-thumb-wrap {
+    width: 100px;
+    height: 95px;
+    flex-shrink: 0;
+  }
+
+  .swap-card-info {
+    padding: 8px 12px;
+  }
+
+  .swap-card-desc {
+    display: none;
+  }
+
+  .btn-select-swap {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .workout-actions-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
+

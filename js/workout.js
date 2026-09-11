@@ -1,4 +1,4 @@
-export const exercises = [
+export const exerciseCatalog = [
   {
     id: 0,
     title: 'Flexão de Braços',
@@ -259,8 +259,235 @@ export const exercises = [
       { title: 'Execução', desc: 'Eleve as pernas até 90° e desça devagar em 4s.' },
       { title: 'Respiração', desc: 'Expire ao elevar e inspire ao descer com controle.' }
     ]
+  },
+  {
+    id: 10,
+    title: 'Polichinelo (Aquecimento)',
+    category: 'superiores',
+    categoryLabel: 'Aquecimento / Cardio',
+    totalSets: 3,
+    sets: '3 séries x 30-50 rep',
+    desc: 'Eleva a frequência cardíaca, aquece as articulações e prepara todo o corpo para o treino.',
+    svgKey: 'polichinelo',
+    level: 'beginner',
+    levelLabel: 'Iniciante',
+    type: 'push',
+    typeLabel: 'Cardio',
+    equipment: 'Peso Corporal',
+    agonists: ['Cardiovascular', 'Panturrilhas'],
+    synergists: ['Deltoides', 'Quadríceps', 'Core'],
+    tempo: 'Ritmo contínuo e constante',
+    startPosition: 'Fique em pé com as pernas unidas e os braços ao lado do corpo.',
+    contraction: 'Salte abrindo pernas e batendo as mãos acima da cabeça; retorne suavemente.',
+    mistakes: ['Aterrissar com os calcanhares pesados', 'Braços frouxos', 'Prender a respiração'],
+    steps: [
+      { title: 'Ajuste', desc: 'Mantenha a postura ereta, abdômen firme e ponta dos pés ativa.' },
+      { title: 'Execução', desc: 'Salte abrindo pernas e elevando os braços, retornando no mesmo ritmo contínuo.' },
+      { title: 'Respiração', desc: 'Inspire pelo nariz e expire pela boca com cadência constante.' }
+    ]
+  },
+  {
+    id: 11,
+    title: 'Elevação de Panturrilha em Pé',
+    category: 'inferiores',
+    categoryLabel: 'Membros Inferiores',
+    totalSets: 4,
+    sets: '4 séries x 15-25 rep',
+    desc: 'Fortalece os gastrocnêmios e sóleo. Máxima amplitude na subida e controle na descida.',
+    svgKey: 'panturrilha',
+    level: 'beginner',
+    levelLabel: 'Iniciante',
+    type: 'leg',
+    typeLabel: 'Perna',
+    equipment: 'Peso Corporal / Degrau',
+    agonists: ['Gastrocnêmio', 'Sóleo'],
+    synergists: ['Tibial Posterior', 'Flexores dos Dedos'],
+    tempo: '2s subir · 2s pausa no topo · 2s descer',
+    startPosition: 'Pés na largura dos quadris, apoie as mãos levemente em uma parede para equilíbrio.',
+    contraction: 'Empurre a ponta dos pés elevando os calcanhares ao ponto máximo e aperte a panturrilha.',
+    mistakes: ['Dobrar os joelhos', 'Descer rápido sem controle', 'Inclinar o tronco para frente'],
+    steps: [
+      { title: 'Ajuste', desc: 'Corpo reto, olhar para frente e mãos apoiadas para estabilidade.' },
+      { title: 'Execução', desc: 'Suba o máximo que puder em 2s, segure no topo por 2s e desça em 2s.' },
+      { title: 'Respiração', desc: 'Expire ao subir na ponta dos pés e inspire ao descer.' }
+    ]
+  },
+  {
+    id: 12,
+    title: 'Flexão com Joelhos Apoiados',
+    category: 'superiores',
+    categoryLabel: 'Membros Superiores',
+    totalSets: 3,
+    sets: '3 séries x 8-15 rep',
+    desc: 'Excelente variação para construir força de peitoral e tríceps com menor sobrecarga.',
+    svgKey: 'flexaoJoelho',
+    level: 'beginner',
+    levelLabel: 'Iniciante',
+    type: 'push',
+    typeLabel: 'Empurrar',
+    equipment: 'Colchonete',
+    agonists: ['Peitoral Maior', 'Tríceps Braquial'],
+    synergists: ['Deltoide Anterior', 'Core'],
+    tempo: '2s descer · 0s pausa · 2s subir',
+    startPosition: 'De quatro apoios, afaste os joelhos para trás até formar uma linha reta dos ombros aos joelhos.',
+    contraction: 'Flexione os cotovelos a 45° descendo o peito próximo ao chão e empurre com força.',
+    mistakes: ['Quadril empinado para trás', 'Cotovelos a 90° abertos', 'Pescoço solto'],
+    steps: [
+      { title: 'Ajuste', desc: 'Apoie os joelhos em um colchonete e alinhe as mãos abaixo dos ombros.' },
+      { title: 'Execução', desc: 'Desça o peito em direção ao chão em 2s e empurre de volta.' },
+      { title: 'Respiração', desc: 'Inspire ao descer e expire com força ao empurrar.' }
+    ]
+  },
+  {
+    id: 13,
+    title: 'Flexão Diamante',
+    category: 'superiores',
+    categoryLabel: 'Membros Superiores',
+    totalSets: 3,
+    sets: '3 séries x 6-12 rep',
+    desc: 'Foco intenso no tríceps braquial e parte medial do peitoral com mãos unidas.',
+    svgKey: 'flexaoDiamante',
+    level: 'advanced',
+    levelLabel: 'Avançado',
+    type: 'push',
+    typeLabel: 'Empurrar',
+    equipment: 'Peso Corporal',
+    agonists: ['Tríceps Braquial', 'Peitoral Maior'],
+    synergists: ['Deltoide Anterior', 'Core'],
+    tempo: '3s descer · 1s pausa · 2s subir',
+    startPosition: 'Posição de prancha alta com polegares e indicadores tocando-se formando um diamante.',
+    contraction: 'Desça o peito até tocar o centro das mãos e estenda completamente os braços no topo.',
+    mistakes: ['Abrir os cotovelos para os lados', 'Deixar o quadril cair', 'Não completar a extensão'],
+    steps: [
+      { title: 'Ajuste', desc: 'Junte os dedos indicadores e polegares sob o centro do peito.' },
+      { title: 'Execução', desc: 'Desça controladamente mantendo os cotovelos rentes às costelas.' },
+      { title: 'Respiração', desc: 'Inspire na descida e expire espremendo o tríceps na subida.' }
+    ]
+  },
+  {
+    id: 14,
+    title: 'Mergulho na Cadeira (Dips)',
+    category: 'superiores',
+    categoryLabel: 'Membros Superiores',
+    totalSets: 3,
+    sets: '3 séries x 8-15 rep',
+    desc: 'Foco no tríceps, peito inferior e deltoides utilizando uma cadeira firme ou sofá.',
+    svgKey: 'dips',
+    level: 'intermediate',
+    levelLabel: 'Intermediário',
+    type: 'push',
+    typeLabel: 'Empurrar',
+    equipment: 'Cadeira / Banco',
+    agonists: ['Tríceps Braquial', 'Deltoide Anterior'],
+    synergists: ['Peitoral Menor', 'Romboides'],
+    tempo: '2s descer · 1s pausa · 2s subir',
+    startPosition: 'Apoie as palmas das mãos na beirada da cadeira, costas eretas próximas ao banco.',
+    contraction: 'Flexione os cotovelos até 90° e empurre para cima até a extensão completa dos braços.',
+    mistakes: ['Afastar as costas da cadeira', 'Descer além de 90° sobrecarregando o ombro', 'Encolher os ombros'],
+    steps: [
+      { title: 'Ajuste', desc: 'Apoie as mãos firmes na beirada com os pés à frente apoiados no chão.' },
+      { title: 'Execução', desc: 'Desça rente ao banco flexionando os cotovelos até 90° e empurre de volta.' },
+      { title: 'Respiração', desc: 'Inspire na descida e expire ao empurrar de volta ao topo.' }
+    ]
+  },
+  {
+    id: 15,
+    title: 'Agachamento Sumô',
+    category: 'inferiores',
+    categoryLabel: 'Membros Inferiores',
+    totalSets: 4,
+    sets: '4 séries x 12-20 rep',
+    desc: 'Base ampla com ponta dos pés a 45°. Foco nos adutores internos da coxa e glúteos.',
+    svgKey: 'agachamentoSumo',
+    level: 'beginner',
+    levelLabel: 'Iniciante',
+    type: 'leg',
+    typeLabel: 'Perna',
+    equipment: 'Peso Corporal',
+    agonists: ['Adutores da Coxa', 'Glúteo Máximo', 'Quadríceps'],
+    synergists: ['Posteriores de Coxa', 'Core'],
+    tempo: '3s descer · 1s pausa · 2s subir',
+    startPosition: 'Pés bem mais afastados que a largura dos ombros, pontas apontadas para fora a 45°.',
+    contraction: 'Agache empurrando os joelhos na direção dos dedos dos pés e aperte os glúteos ao subir.',
+    mistakes: ['Joelhos entrando para dentro', 'Tronco caindo para frente', 'Levantar os calcanhares'],
+    steps: [
+      { title: 'Ajuste', desc: 'Afaste os pés além dos ombros e aponte os dedos para fora a 45°.' },
+      { title: 'Execução', desc: 'Desça o quadril verticalmente mantendo os joelhos abertos e suba espremendo os glúteos.' },
+      { title: 'Respiração', desc: 'Inspire descendo e expire com força ao retornar ao topo.' }
+    ]
   }
 ];
+
+export const exercises = [];
+
+export const DEFAULT_WORKOUT_IDS = [10, 0, 1, 2, 3, 4, 11, 5, 6, 7, 8, 9];
+export const WORKOUT_SELECTION_KEY = 'calistenia_treino_selecao';
+
+export function getActiveWorkoutIds() {
+  try {
+    const raw = localStorage.getItem(WORKOUT_SELECTION_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    // fallback
+  }
+  return [...DEFAULT_WORKOUT_IDS];
+}
+
+export function saveActiveWorkoutIds(ids) {
+  try {
+    localStorage.setItem(WORKOUT_SELECTION_KEY, JSON.stringify(ids));
+  } catch (e) {
+    console.error('Erro ao salvar seleção de treino:', e);
+  }
+}
+
+export function refreshActiveExercises() {
+  const ids = getActiveWorkoutIds();
+  const active = ids.map(id => exerciseCatalog.find(ex => ex.id === id)).filter(Boolean);
+  exercises.length = 0;
+  exercises.push(...active);
+  return exercises;
+}
+
+export function swapWorkoutExercise(currentExerciseId, newExerciseId) {
+  const ids = getActiveWorkoutIds();
+  const idx = ids.indexOf(currentExerciseId);
+  if (idx !== -1) {
+    ids[idx] = newExerciseId;
+  } else {
+    ids.push(newExerciseId);
+  }
+  saveActiveWorkoutIds(ids);
+  refreshActiveExercises();
+
+  // Garante que o progresso do novo exercício exista
+  const newEx = exerciseCatalog.find(e => e.id === newExerciseId);
+  if (newEx && !exerciseProgress[newExerciseId]) {
+    exerciseProgress[newExerciseId] = {
+      completed: new Array(newEx.totalSets).fill(false),
+      activeSet: 0
+    };
+    saveDailyProgress();
+  }
+}
+
+export function resetWorkoutToDefault() {
+  saveActiveWorkoutIds(DEFAULT_WORKOUT_IDS);
+  refreshActiveExercises();
+  initCleanProgress();
+  saveDailyProgress();
+}
+
+export function getAvailableAlternatives(currentExercise) {
+  const activeIds = new Set(exercises.map(e => e.id));
+  return exerciseCatalog.filter(e => e.id !== currentExercise?.id && !activeIds.has(e.id));
+}
+
+// Inicializa a lista ativa de exercícios
+refreshActiveExercises();
 
 export const STORAGE_KEY = 'calistenia_treino_diario';
 

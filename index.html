@@ -86,6 +86,17 @@
       <button class="tab-btn" type="button" data-category="core">Core / Abdômen</button>
     </div>
 
+    <div class="workout-actions-bar">
+      <div class="workout-actions-info">
+        <span>⚙️ <strong>Treino Personalizável:</strong> toque em <em>"🔄 Trocar"</em> em qualquer card para mudar o exercício.</span>
+      </div>
+      <div class="workout-actions-btns">
+        <button id="btnResetWorkout" class="btn-reset-workout" type="button" title="Restaurar lista padrão de exercícios">
+          ↺ Restaurar Treino Original
+        </button>
+      </div>
+    </div>
+
     <div id="exerciseContainer" class="exercise-grid"></div>
   </div>
 
@@ -172,6 +183,26 @@
         <div id="tabPanelBio" style="display:none;">
           <div id="biomechPanel" class="biomech-panel"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Seletor de Substitutos de Exercício -->
+  <div id="exerciseSwapModal" class="modal-overlay" aria-hidden="true">
+    <div class="swap-modal-content" role="dialog" aria-modal="true" aria-labelledby="swapModalTitle">
+      <button id="closeSwapModalBtn" class="modal-close-btn" type="button" aria-label="Fechar seletor">&times;</button>
+      
+      <div class="swap-modal-header">
+        <h2 id="swapModalTitle" class="swap-modal-title">🔄 Substituir Exercício</h2>
+        <p id="swapModalSubtitle" class="swap-modal-subtitle">Escolha uma variação compatível para o seu treino</p>
+      </div>
+
+      <div id="swapModalBody" class="swap-modal-body">
+        <div id="swapOptionsGrid" class="swap-options-grid"></div>
+      </div>
+
+      <div class="swap-modal-footer">
+        <button id="cancelSwapModalBtn" class="btn btn-outline btn-sm" type="button">Cancelar</button>
       </div>
     </div>
   </div>
