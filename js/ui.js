@@ -22,116 +22,23 @@ export function getState() {
   return state;
 }
 
-function createExerciseFigure({
-  headX = 60,
-  headY = 18,
-  torsoLine,
-  leftArm,
-  rightArm,
-  leftLeg,
-  rightLeg,
-  accentStroke = '#dbeafe'
-}) {
-  return `
-    <svg class="svg-icon" viewBox="0 0 120 120" aria-hidden="true">
-      <defs>
-        <linearGradient id="figureBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#bae6fd"/>
-          <stop offset="100%" stop-color="#38bdf8"/>
-        </linearGradient>
-        <linearGradient id="figureBodyShadow" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#7dd3fc"/>
-          <stop offset="100%" stop-color="#0284c7"/>
-        </linearGradient>
-      </defs>
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="${headX}" cy="${headY}" r="10" fill="url(#figureBodyGradient)"/>
-        <path d="${torsoLine}" stroke="url(#figureBodyShadow)" stroke-width="12"/>
-        <path d="${leftArm}" stroke="url(#figureBodyShadow)" stroke-width="8"/>
-        <path d="${rightArm}" stroke="url(#figureBodyShadow)" stroke-width="8"/>
-        <path d="${leftLeg}" stroke="url(#figureBodyShadow)" stroke-width="8"/>
-        <path d="${rightLeg}" stroke="url(#figureBodyShadow)" stroke-width="8"/>
-        <path d="M${headX - 6} ${headY + 4} Q${headX} ${headY + 10} ${headX + 6} ${headY + 4}" stroke="${accentStroke}" stroke-width="2.5" fill="none"/>
-      </g>
-    </svg>
-  `;
-}
-
-const exerciseSVGs = {
-  flexao: '<img class="svg-icon" src="assets/exercicios/flexao.svg?v=flexao-20260901" alt="Flexão de braços" />',
-  pike: createExerciseFigure({
-    torsoLine: 'M60 30 L60 44 L60 56',
-    leftArm: 'M60 40 L45 58 L32 66',
-    rightArm: 'M60 40 L75 58 L88 66',
-    leftLeg: 'M60 56 L52 82',
-    rightLeg: 'M60 56 L68 82',
-    accentStroke: '#dbeafe'
-  }),
-  remada: createExerciseFigure({
-    torsoLine: 'M60 30 L60 46 L60 58',
-    leftArm: 'M60 40 L44 36 L28 44',
-    rightArm: 'M60 40 L76 36 L92 44',
-    leftLeg: 'M60 58 L54 90',
-    rightLeg: 'M60 58 L66 90',
-    accentStroke: '#e0f2fe'
-  }),
-  superman: createExerciseFigure({
-    torsoLine: 'M60 30 L60 46 L60 58',
-    leftArm: 'M60 40 L35 30 L18 30',
-    rightArm: 'M60 40 L85 30 L102 30',
-    leftLeg: 'M60 58 L52 88',
-    rightLeg: 'M60 58 L68 88',
-    accentStroke: '#f0f9ff'
-  }),
-  agachamento: createExerciseFigure({
-    torsoLine: 'M60 30 L60 42 L60 52',
-    leftArm: 'M60 40 L48 52 L36 64',
-    rightArm: 'M60 40 L72 52 L84 64',
-    leftLeg: 'M60 52 L52 72 L46 92',
-    rightLeg: 'M60 52 L68 72 L74 92',
-    accentStroke: '#dbeafe'
-  }),
-  afundo: createExerciseFigure({
-    torsoLine: 'M60 30 L60 42 L60 52',
-    leftArm: 'M60 40 L44 54 L31 70',
-    rightArm: 'M60 40 L76 56 L88 70',
-    leftLeg: 'M60 52 L46 76 L41 92',
-    rightLeg: 'M60 52 L76 80 L82 96',
-    accentStroke: '#dbeafe'
-  }),
-  elevacaoPelvica: createExerciseFigure({
-    torsoLine: 'M60 30 L60 48 L62 58',
-    leftArm: 'M60 38 L42 44 L30 54',
-    rightArm: 'M60 38 L78 44 L90 54',
-    leftLeg: 'M60 58 L52 82',
-    rightLeg: 'M60 58 L68 82',
-    accentStroke: '#f0f9ff'
-  }),
-  prancha: createExerciseFigure({
-    torsoLine: 'M60 28 L60 54 L60 60',
-    leftArm: 'M60 36 L42 42 L31 52',
-    rightArm: 'M60 36 L78 42 L89 52',
-    leftLeg: 'M60 60 L52 86',
-    rightLeg: 'M60 60 L68 86',
-    accentStroke: '#dbeafe'
-  }),
-  remador: createExerciseFigure({
-    torsoLine: 'M60 30 L60 46 L60 58',
-    leftArm: 'M60 40 L42 38 L28 46',
-    rightArm: 'M60 40 L78 38 L92 46',
-    leftLeg: 'M60 58 L54 86',
-    rightLeg: 'M60 58 L66 86',
-    accentStroke: '#dbeafe'
-  }),
-  elevacaoPernas: createExerciseFigure({
-    torsoLine: 'M60 28 L60 44 L60 58',
-    leftArm: 'M60 38 L46 50 L30 58',
-    rightArm: 'M60 38 L74 50 L90 58',
-    leftLeg: 'M60 58 L56 84 L54 90',
-    rightLeg: 'M60 58 L64 84 L66 90',
-    accentStroke: '#f0f9ff'
-  })
+export const exerciseGIFs = {
+  flexao: 'assets/exercicios/flexao.gif',
+  pike: 'assets/exercicios/pike.gif',
+  remada: 'assets/exercicios/remada.gif',
+  superman: 'assets/exercicios/superman.gif',
+  agachamento: 'assets/exercicios/agachamento.gif',
+  afundo: 'assets/exercicios/afundo.gif',
+  elevacaoPelvica: 'assets/exercicios/elevacaoPelvica.gif',
+  prancha: 'assets/exercicios/prancha.gif',
+  remador: 'assets/exercicios/remador.gif',
+  elevacaoPernas: 'assets/exercicios/elevacaoPernas.gif'
 };
+
+export function getExerciseMediaHTML(svgKey, title) {
+  const src = exerciseGIFs[svgKey] || `assets/exercicios/${svgKey}.gif`;
+  return `<img class="exercise-card-gif" src="${src}" alt="${title}" loading="lazy" />`;
+}
 
 export function renderExercises(data = exercises) {
   const container = document.getElementById('exerciseContainer');
@@ -173,7 +80,7 @@ export function renderExercises(data = exercises) {
         <span class="card-progress-pill" style="${isAllDone ? 'color:#10b981; border-color:#10b981;' : ''}">
           ${isAllDone ? '✓ Concluído' : `${completedCount}/${item.totalSets} séries`}
         </span>
-        ${exerciseSVGs[item.svgKey] || ''}
+        ${getExerciseMediaHTML(item.svgKey, item.title)}
       </div>
       <div class="exercise-body">
         <div class="card-tags-row">
@@ -297,69 +204,10 @@ export function openModal(exercise) {
 
   const svgContainer = document.getElementById('modalSvgContainer');
   if (svgContainer) {
-    svgContainer.innerHTML = '';
-
+    const gifSrc = exerciseGIFs[exercise.svgKey] || `assets/exercicios/${exercise.svgKey}.gif`;
     svgContainer.innerHTML = `
-      <div id="image-upload-container" class="image-upload-container">
-        <img id="image-preview" alt="Pré-visualização da imagem selecionada">
-        <label for="image-upload-input" class="image-upload-label">Selecionar Imagem</label>
-        <input type="file" id="image-upload-input" accept="image/*" style="display:none;">
-      </div>
+      <img class="modal-exercise-gif" src="${gifSrc}" alt="${exercise.title}" />
     `;
-
-    const inputEl = svgContainer.querySelector('#image-upload-input');
-    const previewEl = svgContainer.querySelector('#image-preview');
-
-    if (inputEl && previewEl) {
-      inputEl.addEventListener('change', function(e) {
-        const file = e.target.files && e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(ev) {
-            const dataUrl = ev.target.result;
-            previewEl.src = dataUrl;
-            previewEl.style.display = 'block';
-            const cont = svgContainer.querySelector('.image-upload-container');
-            if (cont) cont.classList.add('has-image');
-
-            // Persist the image for this exercise in LocalStorage
-            try {
-              localStorage.setItem(`card_image_${exercise.id}`, dataUrl);
-            } catch (err) {
-              // ignore storage errors (quota, private mode, etc.)
-            }
-
-            // Update the corresponding exercise card in the main list (if present)
-            try {
-              const card = document.querySelector(`.exercise-card[data-exercise-id="${exercise.id}"]`);
-              if (card) {
-                const imgContainer = card.querySelector('.img-container');
-                if (imgContainer) {
-                  const badgeHTML = imgContainer.querySelector('.card-badge')?.outerHTML || '';
-                  const pillHTML = imgContainer.querySelector('.card-progress-pill')?.outerHTML || '';
-                  imgContainer.innerHTML = `${badgeHTML}${pillHTML}<img class="svg-icon" src="${dataUrl}" alt="Imagem do exercício" />`;
-                }
-              }
-            } catch (err) {
-              // ignore DOM update errors
-            }
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-      // If an image was previously saved for this exercise, load it into the preview
-      try {
-        const saved = localStorage.getItem(`card_image_${exercise.id}`);
-        if (saved) {
-          previewEl.src = saved;
-          previewEl.style.display = 'block';
-          const cont = svgContainer.querySelector('.image-upload-container');
-          if (cont) cont.classList.add('has-image');
-        }
-      } catch (err) {
-        // ignore storage errors
-      }
-    }
   }
 
   const guidedBar = document.getElementById('modalGuidedBar');

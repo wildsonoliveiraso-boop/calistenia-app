@@ -270,14 +270,35 @@ header p {
   justify-content: center;
 }
 
-/* Ensure images inside the card fill vertically and touch top/bottom */
-.img-container img {
-  height: 190px;
-  width: auto;
-  object-fit: contain;
-  transform: none;
-  margin: 0;
+/* Ensure images inside the card fill with high quality */
+.img-container img,
+.exercise-card-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
+
+.modal-hero {
+  width: 100%;
+  height: 250px;
+  background: #080f1a;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-exercise-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #080f1a;
+  display: block;
+}
+
 
 .card-badge,
 .card-progress-pill {
