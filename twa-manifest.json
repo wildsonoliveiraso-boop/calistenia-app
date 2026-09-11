@@ -1,0 +1,41 @@
+{
+  "packageId": "com.treino.calistenia",
+  "host": "wildsonoliveiraso-boop.github.io",
+  "name": "Treino de Calistenia",
+  "launcherName": "Calistenia",
+  "display": "standalone",
+  "themeColor": "#10b981",
+  "navigationColor": "#0f172a",
+  "navigationColorDark": "#0f172a",
+  "navigationDividerColor": "#1e293b",
+  "navigationDividerColorDark": "#1e293b",
+  "backgroundColor": "#0f172a",
+  "enableNotifications": false,
+  "startUrl": "/calistenia-app/",
+  "iconUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/icons/icon-512.png",
+  "maskableIconUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/icons/icon-512.png",
+  "monochromeIconUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/icons/icon-512.png",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "signingKey": {
+    "path": "./debug.keystore",
+    "alias": "androiddebugkey"
+  },
+  "enableSiteSettingsShortcut": true,
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://wildsonoliveiraso-boop.github.io/calistenia-app/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersionName": "1.0.0"
+}

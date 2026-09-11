@@ -1,18 +1,14 @@
 name: 📱 Build Android APK (Bubblewrap/TWA)
 
 on:
-  # Acionado manualmente pelo usuário no GitHub
   workflow_dispatch:
     inputs:
       pages_url:
-        description: |
-          URL completa do seu GitHub Pages (sem barra final).
-          Exemplo: https://meuusuario.github.io/meu-repo
+        description: 'URL do GitHub Pages (ex: https://usuario.github.io/repo)'
         required: false
         default: ''
         type: string
 
-  # Também acionado automaticamente após o deploy das Pages
   workflow_run:
     workflows: ['🚀 Deploy → GitHub Pages']
     types: [completed]
@@ -21,11 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  # ─────────────────────────────────────────────────────────────────
   build-apk:
     name: 🤖 Build APK via Bubblewrap TWA
     runs-on: ubuntu-latest
-    # Só roda se o trigger manual OU o deploy de Pages foi bem-sucedido
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
@@ -35,7 +29,7 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # ── 2. Java 17 (requerido pelo Android SDK / Gradle) ─────────
+      # ── 2. Java 17 ───────────────────────────────────────────────
       - name: ☕ Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -65,7 +59,6 @@ jobs:
       - name: 🌐 Determine Pages URL
         id: url
         run: |
-          # Prioridade: input manual > automático pelo repositório
           MANUAL="${{ github.event.inputs.pages_url }}"
           if [ -n "$MANUAL" ]; then
             PAGES_URL="$MANUAL"
@@ -74,43 +67,28 @@ jobs:
             REPO="${{ github.event.repository.name }}"
             PAGES_URL="https://${OWNER}.github.io/${REPO}"
           fi
-
-          # Remove trailing slash
           PAGES_URL="${PAGES_URL%/}"
-
           echo "url=$PAGES_URL" >> $GITHUB_OUTPUT
           echo "host=$(echo $PAGES_URL | sed 's|https://||' | cut -d'/' -f1)" >> $GITHUB_OUTPUT
-          echo ""
           echo "📡 Pages URL: $PAGES_URL"
 
-      # ── 7. Aguardar o app estar acessível (max 3min) ─────────────
+      # ── 7. Aguardar Pages estar acessível ────────────────────────
       - name: ⏳ Wait for Pages to be accessible
         run: |
           PAGES_URL="${{ steps.url.outputs.url }}"
           MANIFEST_URL="${PAGES_URL}/manifest.json"
-          echo "🔍 Verificando: $MANIFEST_URL"
-
-          for i in $(seq 1 18); do
+          echo "🔍 Verificando disponibilidade: $MANIFEST_URL"
+          for i in $(seq 1 12); do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$MANIFEST_URL" 2>/dev/null || echo "000")
-            echo "  Tentativa $i/18 → HTTP $STATUS"
+            echo "  Tentativa $i/12 → HTTP $STATUS"
             if [ "$STATUS" = "200" ]; then
               echo "✅ App acessível!"
               break
             fi
-            if [ $i -eq 18 ]; then
-              echo "⚠️  App ainda não acessível após 3 minutos."
-              echo "   Continuando mesmo assim — o build pode falhar se a URL não estiver no ar."
-            fi
-            sleep 10
+            sleep 5
           done
 
-      # ── 8. Instalar Bubblewrap ────────────────────────────────────
-      - name: 📦 Install Bubblewrap CLI
-        run: |
-          npm install -g @bubblewrap/cli@latest
-          bubblewrap --version
-
-      # ── 9. Gerar Keystore de debug ───────────────────────────────
+      # ── 8. Gerar Keystore de debug ───────────────────────────────
       - name: 🔑 Generate debug keystore
         run: |
           keytool -genkeypair -v \
@@ -125,68 +103,43 @@ jobs:
             2>/dev/null
           echo "✅ Keystore de debug gerado"
 
-      # ── 10. Inicializar projeto Bubblewrap ────────────────────────
-      - name: 🔧 Bubblewrap Init
+      # ── 9. Pré-configurar caminhos do Bubblewrap ──────────────────
+      # CRÍTICO: Configura ~/.bubblewrap/config.json ANTES de chamar qualquer comando do Bubblewrap
+      # Isso impede que o Bubblewrap trave no prompt interativo "Do you want Bubblewrap to install the JDK?"
+      - name: ⚙️ Pre-configure Bubblewrap paths
+        run: |
+          mkdir -p ~/.bubblewrap
+          cat > ~/.bubblewrap/config.json << EOF
+          {
+            "jdkPath": "${JAVA_HOME}",
+            "androidSdkPath": "${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          }
+          EOF
+          echo "✅ ~/.bubblewrap/config.json configurado:"
+          cat ~/.bubblewrap/config.json
+
+      # ── 10. Instalar Bubblewrap CLI ──────────────────────────────
+      - name: 📦 Install Bubblewrap CLI
+        run: |
+          npm install -g @bubblewrap/cli@latest
+          bubblewrap --version
+
+      # ── 11. Sincronizar twa-manifest.json ────────────────────────
+      - name: 📋 Prepare twa-manifest.json
         run: |
           PAGES_URL="${{ steps.url.outputs.url }}"
-          MANIFEST_URL="${PAGES_URL}/manifest.json"
+          HOST="${{ steps.url.outputs.host }}"
+          START_PATH=$(echo $PAGES_URL | sed "s|https://$HOST||")
+          [ -z "$START_PATH" ] && START_PATH="/"
+          [[ "$START_PATH" != */ ]] && START_PATH="${START_PATH}/"
 
-          echo "🔧 Inicializando Bubblewrap com manifest: $MANIFEST_URL"
-
-          # Configura os paths do JDK e Android SDK para o Bubblewrap
-          JAVA_HOME_PATH="$JAVA_HOME"
-          ANDROID_SDK_PATH="$ANDROID_SDK_ROOT"
-
-          # Cria arquivo de configuração do Bubblewrap
-          mkdir -p ~/.bubblewrap
-          cat > ~/.bubblewrap/config.json << CONFIG
-          {
-            "jdkPath": "$JAVA_HOME_PATH",
-            "androidSdkPath": "$ANDROID_SDK_PATH"
-          }
-          CONFIG
-
-          # Roda init de forma não-interativa
-          # As respostas do prompt são passadas via stdin:
-          # - packageId: com.treino.calistenia
-          # - signing key path: debug.keystore
-          # - key alias: androiddebugkey  
-          # - store password: android
-          # - key password: android
-          printf "com.treino.calistenia\ndebug.keystore\nandroiddebugkey\nandroid\nandroid\n" | \
-            bubblewrap init \
-              --manifest "$MANIFEST_URL" \
-              --directory . \
-            2>&1 | tee bubblewrap-init.log || true
-
-          echo "Init concluído. Verificando arquivos gerados:"
-          ls -la android/ 2>/dev/null || echo "Pasta android/ não criada pelo init"
-          ls -la twa-manifest.json 2>/dev/null || echo "twa-manifest.json não criado"
-
-      # ── 11. Fallback: criar twa-manifest.json manualmente ────────
-      - name: 📋 Create twa-manifest.json (fallback)
-        if: always()
-        run: |
-          if [ -f twa-manifest.json ]; then
-            echo "✅ twa-manifest.json já existe (criado pelo init)"
-            cat twa-manifest.json
-          else
-            echo "⚠️  Criando twa-manifest.json manualmente..."
-            PAGES_URL="${{ steps.url.outputs.url }}"
-            HOST="${{ steps.url.outputs.host }}"
-            START_PATH=$(echo $PAGES_URL | sed "s|https://$HOST||")
-            [ -z "$START_PATH" ] && START_PATH="/"
-            [[ "$START_PATH" != */ ]] && START_PATH="${START_PATH}/"
-
-            cat > twa-manifest.json << TWAMF
+          cat > twa-manifest.json << EOF
           {
             "packageId": "com.treino.calistenia",
             "host": "$HOST",
-            "startUrl": "$START_PATH",
             "name": "Treino de Calistenia",
             "launcherName": "Calistenia",
             "display": "standalone",
-            "orientation": "portrait",
             "themeColor": "#10b981",
             "navigationColor": "#0f172a",
             "navigationColorDark": "#0f172a",
@@ -198,7 +151,7 @@ jobs:
             "iconUrl": "${PAGES_URL}/icons/icon-512.png",
             "maskableIconUrl": "${PAGES_URL}/icons/icon-512.png",
             "monochromeIconUrl": "${PAGES_URL}/icons/icon-512.png",
-            "appVersion": "1.0",
+            "appVersion": "1.0.0",
             "appVersionCode": 1,
             "signingKey": {
               "path": "./debug.keystore",
@@ -209,58 +162,73 @@ jobs:
             "webManifestUrl": "${PAGES_URL}/manifest.json",
             "fallbackType": "customtabs",
             "features": {},
-            "alphaDependencies": { "enabled": false },
+            "alphaDependencies": {
+              "enabled": false
+            },
             "isChromeOSOnly": false,
             "isMetaQuest": false,
             "fullScopeUrl": "${PAGES_URL}/",
             "minSdkVersion": 21,
-            "pwafeatures": []
+            "orientation": "portrait",
+            "fingerprints": [],
+            "additionalTrustedOrigins": [],
+            "retainedBundles": [],
+            "appVersionName": "1.0.0"
           }
-          TWAMF
-            echo "twa-manifest.json criado:"
-            cat twa-manifest.json
-          fi
+          EOF
+          echo "✅ twa-manifest.json pronto:"
+          cat twa-manifest.json
 
-      # ── 12. Build APK via Bubblewrap ─────────────────────────────
-      - name: 🏗️ Build APK
+      # ── 12. Gerar projeto Android via Bubblewrap ─────────────────
+      - name: 🔧 Generate Android Project
         run: |
-          echo "🏗️  Iniciando build do APK..."
+          PAGES_URL="${{ steps.url.outputs.url }}"
+          echo "Gerando/atualizando projeto Android..."
 
-          # Bubblewrap build — fornece senhas do keystore via stdin
-          printf "android\nandroid\n" | \
-            bubblewrap build \
-              --skipPwaValidation \
-            2>&1 | tee bubblewrap-build.log || BUILD_FAILED=true
+          # Aceita licenças do Android SDK se necessário
+          yes | sdkmanager --licenses 2>/dev/null || true
 
+          # Atualiza ou gera o projeto sem prompts
+          bubblewrap update --skipVersionUpgrade || {
+            echo "Update direto falhou, inicializando a partir do manifesto web..."
+            yes "" | bubblewrap init --manifest "${PAGES_URL}/manifest.json" --directory . || true
+          }
+
+          echo "Arquivos no diretório após geração:"
+          ls -la
+
+      # ── 13. Build APK ────────────────────────────────────────────
+      - name: 🏗️ Build APK
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: android
+          BUBBLEWRAP_KEY_PASSWORD: android
+        run: |
+          echo "🏗️ Iniciando build do APK..."
+
+          # Tenta build via Bubblewrap
+          bubblewrap build --skipPwaValidation || BUILD_FAILED=true
+
+          # Se o build do Bubblewrap falhou, compila diretamente com Gradle
           if [ -n "$BUILD_FAILED" ]; then
-            echo ""
-            echo "⚠️  Bubblewrap build falhou. Tentando Gradle diretamente..."
-
-            # Fallback: build debug via Gradle (não requer keystore)
-            if [ -d "android" ]; then
-              cd android
+            echo "⚠️ Tentando compilar via Gradle diretamente..."
+            GRADLEW_DIR=$(find . -name "gradlew" -type f -exec dirname {} \; | head -n 1)
+            if [ -n "$GRADLEW_DIR" ]; then
+              cd "$GRADLEW_DIR"
               chmod +x gradlew
-              ./gradlew assembleDebug \
-                --no-daemon \
-                --stacktrace \
-                2>&1 | tee ../gradle-build.log
-              cd ..
+              ./gradlew assembleDebug --no-daemon
+              cd - > /dev/null
             else
-              echo "❌ Pasta android/ não encontrada. Build não pôde ser concluído."
-              echo "   Verifique os logs acima para diagnóstico."
+              echo "❌ gradlew não encontrado"
               exit 1
             fi
           fi
 
-          # Lista todos os APKs gerados
           echo ""
-          echo "📱 APKs encontrados:"
-          find . -name "*.apk" -type f 2>/dev/null | while read f; do
-            echo "  → $f ($(du -sh "$f" | cut -f1))"
-          done
+          echo "📱 APKs gerados:"
+          find . -name "*.apk" -type f
 
-      # ── 13. Renomear APK para nome amigável ──────────────────────
-      - name: 📝 Rename APK
+      # ── 14. Preparar arquivos para download ──────────────────────
+      - name: 📝 Collect APKs
         if: always()
         run: |
           mkdir -p output
@@ -269,9 +237,10 @@ jobs:
             cp "$f" "output/calistenia-${BASE}.apk"
             echo "Copiado: $f → output/calistenia-${BASE}.apk"
           done
-          ls -la output/ 2>/dev/null || echo "Nenhum APK copiado"
+          echo "Conteúdo de output/:"
+          ls -lh output/
 
-      # ── 14. Upload do APK como artefato ──────────────────────────
+      # ── 15. Upload do APK como artefato ──────────────────────────
       - name: 📤 Upload APK artifact
         uses: actions/upload-artifact@v4
         if: always()
@@ -280,11 +249,11 @@ jobs:
           path: |
             output/*.apk
             *.apk
-            android/app/build/outputs/apk/**/*.apk
+            **/build/outputs/apk/**/*.apk
           if-no-files-found: warn
           retention-days: 30
 
-      # ── 15. Resumo do build ───────────────────────────────────────
+      # ── 16. Resumo do build ───────────────────────────────────────
       - name: 📊 Build Summary
         if: always()
         run: |
@@ -293,11 +262,12 @@ jobs:
           echo "**URL do App:** ${{ steps.url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          APK_COUNT=$(find . -name "*.apk" -type f 2>/dev/null | wc -l)
+          APK_COUNT=$(find output/ -name "*.apk" -type f 2>/dev/null | wc -l)
           if [ "$APK_COUNT" -gt "0" ]; then
             echo "✅ **$APK_COUNT APK(s) gerado(s) com sucesso!**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Baixe o APK na aba **Artifacts** desta execução do workflow." >> $GITHUB_STEP_SUMMARY
+            echo "Baixe o arquivo na seção **Artifacts** abaixo:" >> $GITHUB_STEP_SUMMARY
+            ls -lh output/*.apk >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ **Nenhum APK foi gerado.** Verifique os logs de build." >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Nenhum APK foi gerado.** Verifique os logs das etapas anteriores." >> $GITHUB_STEP_SUMMARY
           fi
