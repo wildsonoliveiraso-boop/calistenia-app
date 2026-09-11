@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Calistenia">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=20260911-v2" />
+  <link rel="stylesheet" href="style.css?v=20260911-v3" />
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -51,34 +51,52 @@
       </div>
     </header>
 
-    <div class="daily-progress-card">
-      <div class="daily-progress-header">
-        <div class="daily-progress-info">
-          <span class="daily-progress-icon">📊</span>
-          <div>
-            <h3 class="daily-progress-title">Progresso Diário</h3>
-            <p id="dailyProgressSubtitle" class="daily-progress-subtitle">0% do treino de hoje concluído (0 de 10 exercícios)</p>
+    <!-- Painel Retrátil Inteligente: Progresso + Cronômetro de Descanso (Gestos + Botão) -->
+    <div id="collapsibleDashboard" class="collapsible-dashboard collapsed">
+      <!-- Pílula Tátil / Alça de Controle -->
+      <div id="dashboardTogglePill" class="dashboard-toggle-pill" role="button" tabindex="0" aria-expanded="false" aria-label="Expandir ou recolher painel de progresso e descanso">
+        <div class="pill-indicator-handle"></div>
+        <div class="pill-summary-content">
+          <div class="pill-badges-group">
+            <span id="pillProgressSummary" class="pill-badge pill-badge-progress">📊 0%</span>
+            <span id="pillTimerSummary" class="pill-badge pill-badge-timer">⏱️ 00:60</span>
+          </div>
+          <span id="pillToggleIcon" class="pill-toggle-icon">▾</span>
+        </div>
+      </div>
+
+      <!-- Conteúdo Deslizante Sanfona -->
+      <div id="dashboardContent" class="dashboard-collapsible-content">
+        <div class="daily-progress-card">
+          <div class="daily-progress-header">
+            <div class="daily-progress-info">
+              <span class="daily-progress-icon">📊</span>
+              <div>
+                <h3 class="daily-progress-title">Progresso Diário</h3>
+                <p id="dailyProgressSubtitle" class="daily-progress-subtitle">0% do treino de hoje concluído (0 de 12 exercícios)</p>
+              </div>
+            </div>
+            <button id="resetDailyProgressBtn" class="btn btn-outline btn-reset-daily" type="button" aria-label="Resetar progresso diário">
+              <span>🔄</span>
+              <span>Resetar Progresso Diário</span>
+            </button>
+          </div>
+          <div class="daily-progress-bar-bg">
+            <div id="dailyProgressBarFill" class="daily-progress-bar-fill"></div>
           </div>
         </div>
-        <button id="resetDailyProgressBtn" class="btn btn-outline btn-reset-daily" type="button" aria-label="Resetar progresso diário">
-          <span>🔄</span>
-          <span>Resetar Progresso Diário</span>
-        </button>
-      </div>
-      <div class="daily-progress-bar-bg">
-        <div id="dailyProgressBarFill" class="daily-progress-bar-fill"></div>
-      </div>
-    </div>
 
-    <div class="timer-card">
-      <h3>Descanso Geral entre Séries</h3>
-      <div id="timerDisplay" class="timer-display">00:60</div>
-      <div class="timer-controls">
-        <button class="btn btn-outline" type="button" data-timer="30">30s</button>
-        <button class="btn btn-outline" type="button" data-timer="60">60s</button>
-        <button class="btn btn-outline" type="button" data-timer="90">90s</button>
-        <button id="timerStartBtn" class="btn" type="button">Iniciar Descanso</button>
-        <button id="timerResetBtn" class="btn btn-outline" type="button">Resetar</button>
+        <div class="timer-card">
+          <h3>Descanso Geral entre Séries</h3>
+          <div id="timerDisplay" class="timer-display">00:60</div>
+          <div class="timer-controls">
+            <button class="btn btn-outline" type="button" data-timer="30">30s</button>
+            <button class="btn btn-outline" type="button" data-timer="60">60s</button>
+            <button class="btn btn-outline" type="button" data-timer="90">90s</button>
+            <button id="timerStartBtn" class="btn" type="button">Iniciar Descanso</button>
+            <button id="timerResetBtn" class="btn btn-outline" type="button">Resetar</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -269,6 +287,6 @@
     })();
   </script>
 
-  <script type="module" src="js/main.js?v=20260911-v2"></script>
+  <script type="module" src="js/main.js?v=20260911-v3"></script>
 </body>
 </html>

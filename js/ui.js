@@ -156,6 +156,11 @@ export function renderProgressBar() {
       : `<strong>${percent}%</strong> do treino de hoje concluído (${complete} de ${total} exercícios)`;
     subtitle.style.color = percent === 100 ? '#10b981' : 'var(--text-muted)';
   }
+
+  const pillProgress = document.getElementById('pillProgressSummary');
+  if (pillProgress) {
+    pillProgress.textContent = `📊 ${percent}%`;
+  }
 }
 
 export function renderSetsTracker() {
@@ -384,10 +389,16 @@ export function showWorkoutCompletedCelebration() {
 
 export function updateGeneralTimerDisplay() {
   const display = document.getElementById('timerDisplay');
-  if (!display) return;
   const minutes = Math.floor(state.totalSeconds / 60);
   const seconds = state.totalSeconds % 60;
-  display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  if (display) display.textContent = timeStr;
+
+  const pillTimer = document.getElementById('pillTimerSummary');
+  if (pillTimer) {
+    pillTimer.textContent = `⏱️ ${timeStr}`;
+    pillTimer.classList.toggle('running', Boolean(state.timerInterval));
+  }
 }
 
 export function setTimer(seconds) {
@@ -663,6 +674,95 @@ export function attachEventHandlers() {
       }
     });
   }
+
+  // Inicializa o Painel Retrátil Inteligente com Gestos e Pílula Tátil
+  initDashboardGestures();
+}
+
+export function toggleDashboard(forceState) {
+  const dashboard = document.getElementById('collapsibleDashboard');
+  const pill = document.getElementById('dashboardTogglePill');
+  if (!dashboard) return;
+
+  const isCollapsed = forceState !== undefined ? forceState : !dashboard.classList.contains('collapsed');
+  dashboard.classList.toggle('collapsed', isCollapsed);
+
+  if (pill) {
+    pill.setAttribute('aria-expanded', String(!isCollapsed));
+  }
+
+  try {
+    localStorage.setItem('calistenia_dashboard_collapsed', String(isCollapsed));
+  } catch (e) {
+    // ignore storage errors
+  }
+
+  playBeep(440, 0.03);
+}
+
+export function initDashboardGestures() {
+  const dashboard = document.getElementById('collapsibleDashboard');
+  const pill = document.getElementById('dashboardTogglePill');
+  if (!dashboard || !pill) return;
+
+  // Carrega estado salvo (por padrão 'true' para manter tela limpa e focada)
+  try {
+    const saved = localStorage.getItem('calistenia_dashboard_collapsed');
+    const shouldBeCollapsed = saved !== null ? saved === 'true' : true;
+    dashboard.classList.toggle('collapsed', shouldBeCollapsed);
+    pill.setAttribute('aria-expanded', String(!shouldBeCollapsed));
+  } catch (e) {
+    dashboard.classList.add('collapsed');
+  }
+
+  // Clique na pílula para expandir ou recolher
+  pill.addEventListener('click', (e) => {
+    e.preventDefault();
+    toggleDashboard();
+  });
+
+  // Acessibilidade por teclado (Enter ou Barra de Espaço)
+  pill.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleDashboard();
+    }
+  });
+
+  // Gestos de toque (Swipe Down para abrir, Swipe Up para recolher)
+  let touchStartY = 0;
+  let touchStartX = 0;
+  let isTrackingTouch = false;
+
+  dashboard.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+      isTrackingTouch = true;
+    }
+  }, { passive: true });
+
+  dashboard.addEventListener('touchend', (e) => {
+    if (!isTrackingTouch || e.changedTouches.length === 0) return;
+    isTrackingTouch = false;
+
+    const endY = e.changedTouches[0].clientY;
+    const endX = e.changedTouches[0].clientX;
+    const diffY = endY - touchStartY;
+    const diffX = endX - touchStartX;
+
+    // Detecta arrasto vertical intencional (mínimo 35px)
+    if (Math.abs(diffY) > 35 && Math.abs(diffY) > Math.abs(diffX)) {
+      const isCollapsed = dashboard.classList.contains('collapsed');
+      if (diffY > 0 && isCollapsed) {
+        // Deslizou para baixo (Swipe Down) -> Abre painel
+        toggleDashboard(false);
+      } else if (diffY < 0 && !isCollapsed) {
+        // Deslizou para cima (Swipe Up) -> Recolhe painel
+        toggleDashboard(true);
+      }
+    }
+  }, { passive: true });
 }
 
 export function openSwapModal(exercise) {
