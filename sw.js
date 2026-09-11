@@ -3,7 +3,7 @@
 //  Estratégia: Cache-First para assets, Network-First para HTML
 // ============================================================
 
-const CACHE_NAME = 'calistenia-v2';
+const CACHE_NAME = 'calistenia-v3';
 const OFFLINE_URL = './';
 
 const PRECACHE_ASSETS = [
@@ -65,7 +65,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets (CSS, JS, imagens): Cache-First → fallback para network
+  // Scripts e Estilos (JS e CSS): Network-First → garante atualizações imediatas no celular
+  const isCode = request.destination === 'script' || request.destination === 'style' || url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+  if (isCode) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Imagens e outros assets pesados: Cache-First → fallback para network
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
@@ -79,3 +96,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
