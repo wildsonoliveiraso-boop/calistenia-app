@@ -3,7 +3,7 @@
 //  Estratégia: Cache-First para assets, Network-First para HTML
 // ============================================================
 
-const CACHE_NAME = 'calistenia-v4';
+const CACHE_NAME = 'calistenia-v5';
 const OFFLINE_URL = './';
 
 const PRECACHE_ASSETS = [
